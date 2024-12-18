@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Stake Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+    <script src="index.js" defer></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            background: linear-gradient(135deg, #ffde59, rgb(157, 0, 248));
+            color: #fff;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 20px;
+            background-color: rgb(157, 0, 248);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        button:hover {
+            transform: scale(1.1);
+            background-color: #8f00d6;
+        }
+        .stats {
+            margin-bottom: 30px;
+        }
+        .stats div {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .game-container {
+            margin-top: 30px;
+        }
+        .simon-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 120px);
+            gap: 30px;
+            justify-content: center;
+            margin: 30px auto;
+        }
+        .simon-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 15px;
+            cursor: pointer;
+            opacity: 0.9;
+            box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .simon-button:hover {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+        .red { background-color: red; }
+        .green { background-color: green; }
+        .blue { background-color: blue; }
+        .yellow { background-color: yellow; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <button id="claimTokens">Claim Initial 100 MemeCoins</button>
+    <p id="message"></p>
+    <div class="stats">
+        <div><strong>Your MemeCoin Balance:</strong> <span id="balance">Loading...</span></div>
+        <div><strong>Your Current Stake:</strong> <span id="stake">Loading...</span></div>
+        <div><strong>Your Potential Winnings:</strong> <span id="winnings">Loading...</span></div>
+    </div>    
+    <h1>Simon Stake Game</h1>
+    <p>Stake Meme Coins and win big by completing Simon levels!</p>
+    <div class="game-container">
+        <button id="startGame">Start Game</button>
+        <button id="advanceLevel" disabled>Advance Level (Stake More)</button>
+        <button id="withdraw" disabled>Withdraw Winnings</button>
+    </div>
+    <div class="simon-grid hidden" id="simonGrid">
+        <div class="simon-button red" id="red"></div>
+        <div class="simon-button green" id="green"></div>
+        <div class="simon-button blue" id="blue"></div>
+        <div class="simon-button yellow" id="yellow"></div>
+    </div>
+    <p id="message"></p>
+    <a href="index.html"><button id="homeButton">Go to Home</button></a>
+</body>
+</html>
