@@ -40,3 +40,11 @@ A fun and interactive Simon game built on the Mantle network, with players staki
 ## Interacting with the Contract
 
 This project interacts with the Mantle blockchain through MetaMask or another Mantle-compatible wallet. Ensure your wallet is connected to the Mantle Sepolia Testnet before playing.
+
+## Screenshots
+
+<img width="1440" alt="Screenshot 2024-12-21 at 8 37 41 PM" src="https://github.com/user-attachments/assets/56018f78-9d75-4c25-adaf-dd4c60811318" />
+<img width="1440" alt="Screenshot 2024-12-17 at 7 31 29 PM" src="https://github.com/user-attachments/assets/d1040ebe-eca4-4788-9a95-7556931f32d5" />
+
+
+
