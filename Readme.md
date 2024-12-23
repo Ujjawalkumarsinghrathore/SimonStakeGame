@@ -11,12 +11,12 @@ A fun and interactive Simon game built on the Mantle network, with players staki
 
 ## Contract Details
 
-- **Contract Address**: `0x6B634BB83C02d3fdCB8dF6B87404cdea10B47bF3`
+- **Contract Address**: `0x8f20Ac76687d921cF3098cb1Db8f2F1ac3a15fdd`
 - **Network**: Mantle Sepolia Testnet
 
 ## Deployment
 
-- **Contract Address**: [View on Explorer](https://sepolia.mantlescan.xyz/address/0x6B634BB83C02d3fdCB8dF6B87404cdea10B47bF3)
+- **Contract Address**: [View on Explorer](https://sepolia.mantlescan.xyz/address/0x8f20Ac76687d921cF3098cb1Db8f2F1ac3a15fdd)
 - **Coin Used**: MNT
 
 ## How It Works

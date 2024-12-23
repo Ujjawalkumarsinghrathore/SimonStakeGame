@@ -1,5 +1,5 @@
-const contractAddress = "0x6B634BB83C02d3fdCB8dF6B87404cdea10B47bF3";
-const memeCoinAddress = "0xb96CbA4f9Ba7E460917c3daF0147EDd09Ed82990";
+const contractAddress = "0x8f20Ac76687d921cF3098cb1Db8f2F1ac3a15fdd";
+const memeCoinAddress = "0xeF8B8538688770a1e4C6501021A1791bBb91d053";
 const contractABI = [
 	{
 		"inputs": [
@@ -29,6 +29,13 @@ const contractABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "withdrawUnstaked",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -41,9 +48,15 @@ const contractABI = [
 	},
 	{
 		"inputs": [],
-		"name": "withdrawUnstaked",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"name": "ENTRY_FEE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -440,99 +453,100 @@ const memeCoinABI = [
 	}
 ]
 
-
 let web3;
 let simonGameContract;
-let userAccount;
 let memeCoinContract;
-
-window.onload = async () => {
-    if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        
-        // Request access to user's Ethereum accounts
-        await ethereum.request({ method: "eth_requestAccounts" });
-        
-        // Get the user's account address
-        userAccount = (await web3.eth.getAccounts())[0];
-        
-        // Initialize the Simon Game contract
-        simonGameContract = new web3.eth.Contract(contractABI, contractAddress);
-        memeCoinContract = new web3.eth.Contract(memeCoinABI, memeCoinAddress);
-        // Display connected status
-        document.getElementById("message").textContent = "Connected to wallet.";
-        
-        // Update stats on load
-        updateStats(); 
-    } else {
-        alert("Please install MetaMask.");
-    }
-};
-
-// Initialize the MemeCoin contract
-
+let userAccount;
+let stake=0;
 
 // Simon Game Variables
 let sequence = [];
 let userSequence = [];
 let level = 0;
 
+window.onload = async () => {
+    if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
 
+        try {
+            // Request wallet access
+            await ethereum.request({ method: "eth_requestAccounts" });
+            userAccount = (await web3.eth.getAccounts())[0];
+
+            // Initialize contracts
+            simonGameContract = new web3.eth.Contract(contractABI, contractAddress);
+            memeCoinContract = new web3.eth.Contract(memeCoinABI, memeCoinAddress);
+
+            document.getElementById("message").textContent = "Connected to wallet.";
+            updateStats();
+        } catch (error) {
+            alert("Error connecting to wallet: " + error.message);
+        }
+    } else {
+        alert("Please install MetaMask to use this application.");
+    }
+};
+
+// Claim initial MemeCoins
 document.getElementById("claimTokens").addEventListener("click", async () => {
     try {
-		await memeCoinContract.methods.claimTokens(web3.utils.toWei("100", "ether")).send({ from: userAccount });
+        await memeCoinContract.methods.claimTokens(web3.utils.toWei("100", "ether")).send({ from: userAccount });
         document.getElementById("message").textContent = "Successfully claimed 100 MemeCoins!";
-		updateStats()
-    } catch (error) {
-        document.getElementById("message").textContent = `Error: ${error.message}`;
-    }
-});
-document.getElementById("startGame").addEventListener("click", async () => {
-    try {
-        await simonGameContract.methods.startGame().send({ from: userAccount });
-        
-        startSimonGame();
-        document.getElementById("simonGrid").classList.remove("hidden");
-
-        document.getElementById("advanceLevel").disabled = false;
-        document.getElementById("withdraw").disabled = false;
-        document.getElementById("message").textContent = `Level ${level} started! Coins staked.`;
         updateStats();
     } catch (error) {
         document.getElementById("message").textContent = `Error: ${error.message}`;
     }
 });
 
-document.getElementById("advanceLevel").addEventListener("click", async () => {
+// Start a new Simon game
+document.getElementById("startGame").addEventListener("click", async () => {
+	stake=1e18;
     try {
-        await simonGameContract.methods.advanceLevel(true).send({ from: userAccount });
-        updateStats();startSimonGame();
-        document.getElementById("message").textContent = `Level ${level} started! Coins staked.`;
+		await memeCoinContract.methods.approve(contractAddress, 1e18).send({ from: userAccount });
+        await simonGameContract.methods.startGame().send({ from: userAccount });
+
+        level = 0;
+        sequence = [];
+        userSequence = [];
+        startSimonGame();
+        document.getElementById("simonGrid").classList.remove("hidden");
+        toggleGameButtons(false);
+
+        document.getElementById("message").textContent = `Game started! Level ${level} initiated.`;
+        updateStats();
     } catch (error) {
-        document.getElementById("message").textContent = `Error: ${error.message}`;
+        document.getElementById("message").textContent = `Error starting game: ${error.message}`;
     }
 });
 
+// Advance to the next level
+document.getElementById("advanceLevel").addEventListener("click", async () => {
+    try {
+		await memeCoinContract.methods.approve(contractAddress, 50e18).send({ from: userAccount });
+        await simonGameContract.methods.advanceLevel(true).send({ from: userAccount });
+
+        startSimonGame();
+        document.getElementById("message").textContent = `Advanced to level ${level}! Coins staked.`;
+        updateStats();
+    } catch (error) {
+        document.getElementById("message").textContent = `Error advancing level: ${error.message}`;
+    }
+});
+
+// Withdraw winnings and end the game
 document.getElementById("withdraw").addEventListener("click", async () => {
     try {
-        // Call advanceLevel with false to withdraw winnings
         await simonGameContract.methods.advanceLevel(false).send({ from: userAccount });
-        updateStats(); // Update stats to reflect withdrawal
-        
-        document.getElementById("message").textContent = "Winnings withdrawn! Game over.";
-        document.getElementById("simonGrid").classList.add("hidden");
-        document.getElementById("advanceLevel").disabled = true;
-        document.getElementById("withdraw").disabled = true;
 
-        // Reset game state
-        sequence = [];
-        userSequence = [];
-        level = 0;
+        resetGameState();
+        document.getElementById("message").textContent = "Winnings withdrawn! Game over.";
+        updateStats();
     } catch (error) {
         document.getElementById("message").textContent = `Error withdrawing: ${error.message}`;
     }
 });
 
+// Core game logic
 function startSimonGame() {
     level++;
     userSequence = [];
@@ -576,54 +590,51 @@ document.querySelectorAll(".simon-button").forEach((button) => {
 async function checkSequence() {
     const index = userSequence.length - 1;
 
-    // Check if the user's input matches the sequence
     if (userSequence[index] !== sequence[index]) {
-        document.getElementById("message").textContent = "Wrong sequence! Game over. Resetting the game...";
+        document.getElementById("message").textContent = "Wrong sequence! Game over.";
 
         try {
-            // Call the resetGame function on the contract
             await simonGameContract.methods.resetGame().send({ from: userAccount });
-            
-            // Update stats and reset the UI
+            resetGameState();
             updateStats();
-            document.getElementById("simonGrid").classList.add("hidden");
-            // document.getElementById("resetGame").classList.add("hidden");
-            document.getElementById("advanceLevel").disabled = true;
-            document.getElementById("withdraw").disabled = true;
-
-            sequence = []; // Clear the Simon game sequence
-            userSequence = []; // Clear the user's sequence
         } catch (error) {
-            document.getElementById("message").textContent = `Error resetting the game: ${error.message}`;
+            document.getElementById("message").textContent = `Error resetting game: ${error.message}`;
         }
 
         return;
     }
 
-    // If the user completes the sequence correctly
     if (userSequence.length === sequence.length) {
         document.getElementById("message").textContent = "Correct sequence! Advance to the next level.";
-        document.getElementById("advanceLevel").disabled = false;
+        toggleGameButtons(false);
     }
 }
 
-
+// Utility functions
 async function updateStats() {
     try {
-        // Fetch the user's MemeCoin balance from the MemeCoin contract
         const balance = await memeCoinContract.methods.balanceOf(userAccount).call();
-        console.log('MemeCoin balance:', balance);  // Debug log
         document.getElementById("balance").textContent = `${web3.utils.fromWei(balance, 'ether')} MemeCoins`;
 
-        // Fetch the user's current stake from the Simon game contract
         const stake = await simonGameContract.methods.playerStake(userAccount).call();
-        console.log('Current Stake:', stake);  // Debug log
         document.getElementById("stake").textContent = `${web3.utils.fromWei(stake, 'ether')} MemeCoins`;
 
-        // Calculate and display the potential winnings
-        const winnings = stake * 2; // Next level doubles the stake
+        const winnings = stake * 2;
         document.getElementById("winnings").textContent = `${web3.utils.fromWei(winnings.toString(), 'ether')} MemeCoins`;
     } catch (error) {
         console.error("Error updating stats:", error);
     }
+}
+
+function toggleGameButtons(disable) {
+    document.getElementById("advanceLevel").disabled = disable;
+    document.getElementById("withdraw").disabled = disable;
+}
+
+function resetGameState() {
+    sequence = [];
+    userSequence = [];
+    level = 0;
+    document.getElementById("simonGrid").classList.add("hidden");
+    toggleGameButtons(true);
 }
